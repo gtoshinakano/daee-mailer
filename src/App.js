@@ -4,6 +4,21 @@ import 'semantic-ui-css/semantic.min.css'
 import axios from 'axios'
 import Iframe from './IFrameComponent'
 
+const meses = [
+  {key: 1, text: "Janeiro", value: 1},
+  {key: 2, text: "Fevereiro", value: 2},
+  {key: 3, text: "Março", value: 3},
+  {key: 4, text: "Abril", value: 4},
+  {key: 5, text: "Maio", value: 5},
+  {key: 6, text: "Junho", value: 6},
+  {key: 7, text: "Julho", value: 7},
+  {key: 8, text: "Agosto", value: 8},
+  {key: 9, text: "Setembro", value: 9},
+  {key: 10, text: "Outubro", value: 10},
+  {key: 11, text: "Novembro", value: 11},
+  {key: 12, text: "Dezembro", value: 12}
+]
+
 class App extends React.Component {
 
   constructor(props){
@@ -16,6 +31,11 @@ class App extends React.Component {
       diretorias: [],
       vencimentos: [],
       selectedVenc: "venc1",
+      selectedDir: "",
+      selectedRefM: 1,
+      selectedRefY: new Date().getFullYear(),
+      mailbody: ""
+
     }
   }
 
@@ -50,10 +70,15 @@ class App extends React.Component {
     }).filter(b => {
       return b.telefones.hasOwnProperty(this.state.selectedVenc)
     })
-    console.log(toret)
     return toret.map(r => {
       return {key: r.sigla, text: r.sigla + " - " + r.diretoria, value: r.sigla}
     })
+  }
+
+  generateAutoText = () => {
+    const text = '<b>Senhor Diretor da '+ this.state.selectedDir +',</b><br /><p>Em observância ao Item I do Artigo 4º da Portaria DAEE-389, de 03/02/2016, anexamos ao presente correio eletrônico a(s) conta(s) digitalizada(s) da(s) linha(s):  referente(s) ao mês de <b>'+ meses[this.state.selectedRefM -1].text + ' de ' + this.state.selectedRefY +'</b>, instalada(s) em unidade(s) dessa Diretoria, com vencimento em '+ this.state.vencimento +', para que seja(m) ratificada(s) por Vossa Senhoria.</p><p>A ratificação poderá ser feita  no próprio corpo deste correio eletrônico e enviada como resposta para avelez@sp.gov.br.</p><p>Se houverem ligações particulares a serem ressarcidas, o depósito deverá ser feito na conta "C" do DAEE no Banco do Brasil S/A - 001 - Ag. 1897-X - Conta Corrente nº139.572-6.</p><p>.</p>'
+
+    this.setState({mailbody: text})
   }
 
   render() {
@@ -85,13 +110,12 @@ class App extends React.Component {
               </Header.Subheader>
             </Header>
           </Grid.Column>
-          <Grid.Column width="7" stretched>
-
+          <Grid.Column width="6" stretched>
             <Iframe src={this.state.host+'/serve-pdf/'+this.state.pdf} height="100%" width="100%" title="conta"
             />
           </Grid.Column>
-          <Grid.Column width="7">
-          <Form>
+          <Grid.Column width="8">
+          <Form size="big">
             <Form.Group>
               <Form.Field
                 label="Selecione o Vencimento"
@@ -107,16 +131,59 @@ class App extends React.Component {
                 control={Form.Select}
                 options={this.getPossibleDirs()}
                 onChange={this.handleChange}
+                name="selectedDir"
                 width="10"
               />
             </Form.Group>
-
-
+            <Form.Group>
+              <Form.Field
+                label="Mês de Referência"
+                control={Form.Select}
+                options={meses}
+                value={this.state.selectedRefM}
+                onChange={this.handleChange}
+                name="selectedRefM"
+                width="8"
+              />
+              <Form.Field
+                label="Ano de Referência"
+                control={Form.Input}
+                type="number"
+                value={this.state.selectedRefY}
+                onChange={this.handleChange}
+                name="selectedRefY"
+                width="8"
+              />
+            </Form.Group>
             <Form.Field>
-              <label>Last Name</label>
-              <input placeholder='Last Name' />
+              <label>Para: </label>
+              {this.state.selectedDir ? this.state.dirData[this.state.selectedDir].email : "SELECIONE A DIRETORIA PRIMEIRO"}
             </Form.Field>
-            <Button type='submit'>Submit</Button>
+            <Form.Field>
+              <label>Assunto: </label>
+              Atestado de contas telefônicas ref. {meses[this.state.selectedRefM-1].text} de {this.state.selectedRefY} - {this.state.selectedDir}
+            </Form.Field>
+            <Form.Field>
+              <label>Anexo: </label>
+              {this.state.pdf}
+            </Form.Field>
+            <Form.Field
+              label="Corpo do Email"
+              control={Form.TextArea}
+              value={this.state.mailbody}
+              onChange={this.handleChange}
+              name="mailbody"
+              rows="15"
+            />
+            <Form.Field
+              control={Button}
+              color="blue"
+              onClick={this.generateAutoText}
+              fluid
+            >
+              GERAR TEXTO AUTOMÁTICO
+            </Form.Field>
+            <Button type='submit' fluid>Submit</Button>
           </Form>
           </Grid.Column>
         </Grid>
