@@ -78,7 +78,7 @@ class App extends React.Component {
   }
 
   generateAutoText = () => {
-    const linhas = (this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc]) ? this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc] : []
+    const linhas = (this.state.dirData[this.state.selectedDir] && this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc]) ? this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc] : []
     let text = ""
     if(linhas.length > 0)
       text = '<b>Senhor Diretor da '+ this.state.selectedDir +',</b><br /><p>Em observância ao Item I do Artigo 4º da Portaria DAEE-389, de 03/02/2016, anexamos ao presente correio eletrônico a(s) conta(s) digitalizada(s) da(s) linha(s):<br /> '+linhas.join("<br />")+'<br />referente(s) ao mês de <b>'+ meses[this.state.selectedRefM -1].text + ' de ' + this.state.selectedRefY +'</b>, instalada(s) em unidade(s) dessa Diretoria, com vencimento em '+ this.state.typedVenc +', para que seja(m) ratificada(s) por Vossa Senhoria.</p><p>A ratificação poderá ser feita  no próprio corpo deste correio eletrônico e enviada como resposta para avelez@sp.gov.br.</p><p>Se houverem ligações particulares a serem ressarcidas, o depósito deverá ser feito na conta "C" do DAEE no Banco do Brasil S/A - 001 - Ag. 1897-X - Conta Corrente nº139.572-6.</p><p>.</p>'
@@ -95,20 +95,23 @@ class App extends React.Component {
   }
 
   handleSubmit = () => {
+    let mesRef = (this.state.selectedRefM < 10) ? '0' + this.state.selectedRefM : this.state.selectedRefM;
     let toPost = {
-      pdf: this.state.pdf,
-      subject: this.state.subject,
+      filePath: this.state.pdf,
+      fileName: this.state.selectedDir+'_'+this.state.selectedRefY+'_'+mesRef+'_vencto_'+this.state.typedVenc.replace(/\//g, '-')+'_'+meses[this.state.selectedRefM-1].text+'.pdf',
+      subject: "Atestado de contas telefônicas ref. " + meses[this.state.selectedRefM-1].text + " de " + this.state.selectedRefY + " - "+ this.state.selectedDir,
       mailTo: this.state.dirData[this.state.selectedDir].email,
-      mailbody: this.state.mailbody
+      mailbody: this.state.mailbody,
+      anoRef: this.state.selectedRefY
     }
 
-    axios.post('sendmail', toPost)
+    axios.post('send-email', toPost)
     .then(function (response) {
       console.log(response);
     })
     .catch(function (error) {
       console.log(error);
-    });
+    })
   }
 
   render() {
