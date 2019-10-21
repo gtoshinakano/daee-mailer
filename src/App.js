@@ -3,6 +3,7 @@ import {Grid, Segment, List, Header, Icon, Form, Button} from 'semantic-ui-react
 import 'semantic-ui-css/semantic.min.css'
 import axios from 'axios'
 import Iframe from './IFrameComponent'
+import ReactHtmlParser from 'react-html-parser';
 
 const meses = [
   {key: 1, text: "Janeiro", value: 1},
@@ -34,7 +35,8 @@ class App extends React.Component {
       selectedDir: "",
       selectedRefM: 1,
       selectedRefY: new Date().getFullYear(),
-      mailbody: ""
+      mailbody: "",
+      typedVenc: ""
 
     }
   }
@@ -62,7 +64,7 @@ class App extends React.Component {
     .catch(e => console.log(e))
   }
 
-  handleChange = (e, { name, value }) => this.setState({ [name]: value }, console.log(this.state))
+  handleChange = (e, { name, value }) => this.setState({ [name]: value }, this.generateAutoText)
 
   getPossibleDirs = () => {
     const toret = Object.entries(this.state.dirData).map(a => {
@@ -76,7 +78,12 @@ class App extends React.Component {
   }
 
   generateAutoText = () => {
-    const text = '<b>Senhor Diretor da '+ this.state.selectedDir +',</b><br /><p>Em observância ao Item I do Artigo 4º da Portaria DAEE-389, de 03/02/2016, anexamos ao presente correio eletrônico a(s) conta(s) digitalizada(s) da(s) linha(s):  referente(s) ao mês de <b>'+ meses[this.state.selectedRefM -1].text + ' de ' + this.state.selectedRefY +'</b>, instalada(s) em unidade(s) dessa Diretoria, com vencimento em '+ this.state.vencimento +', para que seja(m) ratificada(s) por Vossa Senhoria.</p><p>A ratificação poderá ser feita  no próprio corpo deste correio eletrônico e enviada como resposta para avelez@sp.gov.br.</p><p>Se houverem ligações particulares a serem ressarcidas, o depósito deverá ser feito na conta "C" do DAEE no Banco do Brasil S/A - 001 - Ag. 1897-X - Conta Corrente nº139.572-6.</p><p>.</p>'
+    const linhas = (this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc]) ? this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc] : []
+    let text = ""
+    if(linhas.length > 0)
+      text = '<b>Senhor Diretor da '+ this.state.selectedDir +',</b><br /><p>Em observância ao Item I do Artigo 4º da Portaria DAEE-389, de 03/02/2016, anexamos ao presente correio eletrônico a(s) conta(s) digitalizada(s) da(s) linha(s):<br /> '+linhas.join("<br />")+'<br />referente(s) ao mês de <b>'+ meses[this.state.selectedRefM -1].text + ' de ' + this.state.selectedRefY +'</b>, instalada(s) em unidade(s) dessa Diretoria, com vencimento em '+ this.state.typedVenc +', para que seja(m) ratificada(s) por Vossa Senhoria.</p><p>A ratificação poderá ser feita  no próprio corpo deste correio eletrônico e enviada como resposta para avelez@sp.gov.br.</p><p>Se houverem ligações particulares a serem ressarcidas, o depósito deverá ser feito na conta "C" do DAEE no Banco do Brasil S/A - 001 - Ag. 1897-X - Conta Corrente nº139.572-6.</p><p>.</p>'
+    else
+      text = "ERRO: Selecione uma diretoria que tenha contas com a data de vencimento selecionada."
 
     this.setState({mailbody: text})
   }
@@ -135,6 +142,14 @@ class App extends React.Component {
                 width="10"
               />
             </Form.Group>
+            <Form.Field
+              label="Data do Vencimento"
+              control={Form.Input}
+              maxLength="10"
+              onChange={this.handleChange}
+              name="typedVenc"
+              placeholder="Digite a data de vencimento da conta"
+            />
             <Form.Group>
               <Form.Field
                 label="Mês de Referência"
@@ -169,21 +184,11 @@ class App extends React.Component {
             </Form.Field>
             <Form.Field
               label="Corpo do Email"
-              control={Form.TextArea}
-              value={this.state.mailbody}
-              onChange={this.handleChange}
-              name="mailbody"
-              rows="15"
             />
-            <Form.Field
-              control={Button}
-              color="blue"
-              onClick={this.generateAutoText}
-              fluid
-            >
-              GERAR TEXTO AUTOMÁTICO
-            </Form.Field>
-            <Button type='submit' fluid>Submit</Button>
+            <Segment size="big" placeholder>
+              { ReactHtmlParser(this.state.mailbody) }
+            </Segment>
+            <Button type='submit' fluid color="green" size="big">Enviar email com as contas</Button>
           </Form>
           </Grid.Column>
         </Grid>

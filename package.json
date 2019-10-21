@@ -10,6 +10,7 @@
     "pdf-viewer-reactjs": "^1.0.5",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
+    "react-html-parser": "^2.0.2",
     "react-iframe": "^1.8.0",
     "react-pdf": "^4.1.0",
     "react-scripts": "3.2.0",
