@@ -88,6 +88,29 @@ class App extends React.Component {
     this.setState({mailbody: text})
   }
 
+  generateAutoSubject = () => {
+    let txt = "Atestado de contas telefônicas ref. " + meses[this.state.selectedRefM-1].text + " de " + this.state.selectedRefY + " - "+ this.state.selectedDir
+    return txt
+
+  }
+
+  handleSubmit = () => {
+    let toPost = {
+      pdf: this.state.pdf,
+      subject: this.state.subject,
+      mailTo: this.state.dirData[this.state.selectedDir].email,
+      mailbody: this.state.mailbody
+    }
+
+    axios.post('sendmail', toPost)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
   render() {
     return (
       <Segment basic>
@@ -122,7 +145,7 @@ class App extends React.Component {
             />
           </Grid.Column>
           <Grid.Column width="8">
-          <Form size="big">
+          <Form size="big" onSubmit={this.handleSubmit}>
             <Form.Group>
               <Form.Field
                 label="Selecione o Vencimento"
@@ -176,7 +199,7 @@ class App extends React.Component {
             </Form.Field>
             <Form.Field>
               <label>Assunto: </label>
-              Atestado de contas telefônicas ref. {meses[this.state.selectedRefM-1].text} de {this.state.selectedRefY} - {this.state.selectedDir}
+              {this.generateAutoSubject()}
             </Form.Field>
             <Form.Field>
               <label>Anexo: </label>
