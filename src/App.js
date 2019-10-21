@@ -188,7 +188,12 @@ class App extends React.Component {
             <Segment size="big" placeholder>
               { ReactHtmlParser(this.state.mailbody) }
             </Segment>
-            <Button type='submit' fluid color="green" size="big">Enviar email com as contas</Button>
+            <Button type='submit' fluid color="green" size="big"
+              disabled={
+                (this.state.typedVenc.length !== 10) ||
+                !(this.state.dirData[this.state.selectedDir].telefones[this.state.selectedVenc])
+              }
+            >Enviar email com as contas</Button>
           </Form>
           </Grid.Column>
         </Grid>
